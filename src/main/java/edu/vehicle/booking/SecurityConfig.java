@@ -17,17 +17,31 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 @Configuration
 class SecurityConfig {
  @Bean PasswordEncoder passwordEncoder(){return new BCryptPasswordEncoder();}
  @Bean SecretKey jwtKey(@Value("${app.jwt-secret}") String secret){if(secret.getBytes(StandardCharsets.UTF_8).length<32)throw new IllegalStateException("JWT_SECRET must contain at least 32 bytes");return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));}
  @Bean TokenService tokenService(SecretKey key,@Value("${app.jwt-expiration-ms}") long expiration){return new TokenService(key,expiration);}
+ @Bean CorsConfigurationSource corsConfigurationSource(@Value("${app.cors-origin}") String origins){
+  CorsConfiguration configuration=new CorsConfiguration();
+  configuration.setAllowedOrigins(Arrays.stream(origins.split(",")).map(String::trim).filter(origin->!origin.isEmpty()).toList());
+  configuration.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+  configuration.setAllowedHeaders(List.of("Authorization","Content-Type"));
+  UrlBasedCorsConfigurationSource source=new UrlBasedCorsConfigurationSource();
+  source.registerCorsConfiguration("/**",configuration);
+  return source;
+ }
  @Bean SecurityFilterChain filterChain(HttpSecurity http,JwtFilter filter) throws Exception {return http.csrf(c->c.disable()).cors(c->{}).sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).exceptionHandling(e->e.authenticationEntryPoint((req,res,ex)->res.sendError(HttpServletResponse.SC_UNAUTHORIZED))).authorizeHttpRequests(a->a.requestMatchers("/api/health","/api/auth/**","/api/services").permitAll().requestMatchers("/api/admin/**").hasRole("ADMIN").anyRequest().authenticated()).addFilterBefore(filter,UsernamePasswordAuthenticationFilter.class).build();}
 }
 @Component class JwtFilter extends OncePerRequestFilter {
