@@ -32,7 +32,9 @@ record StatusRequest(@NotNull BookingStatus status,@Size(max=1000) String adminN
  @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class) ResponseEntity<Map<String,Object>> conflict(){return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("status",409,"error","A record with those details already exists or is still in use"));}
  @ExceptionHandler(Exception.class) ResponseEntity<Map<String,Object>> generic(Exception e){return ResponseEntity.status(500).body(Map.of("status",500,"error","An unexpected server error occurred"));}
 }
-@Configuration class CorsConfig implements WebMvcConfigurer { @Value("${app.cors-origin}") String origin; @Override public void addCorsMappings(CorsRegistry r){r.addMapping("/api/**").allowedOrigins(origin).allowedMethods("GET","POST","PUT","PATCH","DELETE","OPTIONS").allowedHeaders("*");} }
+@Configuration class CorsConfig implements WebMvcConfigurer { @Value("${app.cors-origin}") String origins; @Override public void addCorsMappings(CorsRegistry r){r.addMapping("/api/**").allowedOrigins(Arrays.stream(origins.split(",")).map(String::trim).filter(s->!s.isEmpty()).toArray(String[]::new)).allowedMethods("GET","POST","PUT","PATCH","DELETE","OPTIONS").allowedHeaders("*");} }
+
+@RestController class HealthController { @GetMapping("/api/health") Map<String,String> health(){return Map.of("status","UP");} }
 
 @RestController @RequestMapping("/api/auth") class AuthController {
  private final UserRepository users;private final PasswordEncoder encoder;private final TokenService tokens;
