@@ -1,0 +1,33 @@
+name: Render production status
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health-check:
+    name: Confirm backend is live
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment:
+      name: Render
+      url: https://vehicle-service-booking-backend-qx8f.onrender.com
+    steps:
+      - name: Wait for Render health check
+        env:
+          HEALTH_URL: https://vehicle-service-booking-backend-qx8f.onrender.com/api/health
+        run: |
+          for attempt in {1..36}; do
+            if curl --fail --silent --show-error "$HEALTH_URL"; then
+              echo
+              echo "Render backend is healthy."
+              exit 0
+            fi
+            echo "Waiting for Render backend... ($attempt/36)"
+            sleep 10
+          done
+          echo "Render backend did not become healthy in time."
+          exit 1
