@@ -21,7 +21,7 @@ jobs:
           HEALTH_URL: https://vehicle-service-booking-backend-qx8f.onrender.com/api/health
         run: |
           for attempt in {1..36}; do
-            if curl --fail --silent --show-error "$HEALTH_URL"; then
+            if curl --connect-timeout 10 --max-time 20 --fail --silent --show-error "$HEALTH_URL"; then
               echo
               echo "Render backend is healthy."
               exit 0
