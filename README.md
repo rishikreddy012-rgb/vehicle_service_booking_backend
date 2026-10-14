@@ -6,8 +6,9 @@ Spring Boot 3 REST API for the Vehicle Service Booking System.
 
 The production backend runs on Render and deploys from the `main` branch of this repository.
 
+- **Render deployment:** [https://vehicle-service-booking-backend-qx8f.onrender.com](https://vehicle-service-booking-backend-qx8f.onrender.com)
 - **API base URL:** [https://vehicle-service-booking-backend-qx8f.onrender.com](https://vehicle-service-booking-backend-qx8f.onrender.com)
-- **Health check:** [https://vehicle-service-booking-backend-qx8f.onrender.com/api/health](https://vehicle-service-booking-backend-qx8f.onrender.com/api/health) — should return `{"status":"UP"}`.
+- **Health check:** [https://vehicle-service-booking-backend-qx8f.onrender.com/api/health](https://vehicle-service-booking-backend-qx8f.onrender.com/api/health) — returns HTTP 200 when healthy.
 - **Frontend:** [https://vehicle-service-booking-frontend-gold.vercel.app](https://vehicle-service-booking-frontend-gold.vercel.app)
 
 Render's free web service may spin down when idle, so its first request after inactivity can take longer while it wakes.
